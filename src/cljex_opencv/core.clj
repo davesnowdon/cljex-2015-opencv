@@ -71,7 +71,9 @@
   (Point. (+ (.x rect) (.width rect)) (+ (.y rect) (.height rect))))
 
 (defn offset-rect
-  "Returns absolute version of rectanged embedded in larger rectangle. use this to convert a rectangle found by applying a classifier to a ROI into coordinates relative to the original image"
+  "Returns absolute version of rectanged embedded in larger
+  rectangle. use this to convert a rectangle found by applying a
+  classifier to a ROI into coordinates relative to the original image"
   [main embedded]
   (Rect. (+ (.x main) (.x embedded))
          (+ (.y main) (.y embedded))
