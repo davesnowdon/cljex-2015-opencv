@@ -8,6 +8,12 @@
 
 (def EYE-XML "resources/haarcascade_eye.xml")
 
+(def RED (Scalar. 0.0  0.0 255.0))
+
+(def GREEN (Scalar. 0.0 255.0 0.0))
+
+(def BLUE (Scalar. 255.0 0.0 0.0))
+
 (defn face-classifier
   "Creates an instance of an openCV classifier that will detect faces"
   []
@@ -92,16 +98,18 @@
 (defn show-faces-and-eyes
   "Demonstration function showing how to make use of the values returned
   by an openCV classified by drawing rectangles around them"
-  [img]
-  (let [gray (colour-to-grayscale img)
-        faces-and-eyes (faces-and-eyes gray)]
-    (doseq [fe faces-and-eyes]
-      (let [{:keys [face eyes]} fe
-            eye-rects (map #(offset-rect face %) eyes)]
-        (Imgproc/rectangle img
-                           (min-point face) (max-point face)
-                           (Scalar. 255.0 0.0 0.0) 2)
-        (doseq [e eye-rects]
-          (Imgproc/rectangle img
-                           (min-point e) (max-point e)
-                           (Scalar. 0.0 255.0 0.0) 2))))))
+  ([img]
+     (show-faces-and-eyes img BLUE GREEN))
+  ([img face-outline-colour eye-outline-colour]
+     (let [gray (colour-to-grayscale img)
+           faces-and-eyes (faces-and-eyes gray)]
+       (doseq [fe faces-and-eyes]
+         (let [{:keys [face eyes]} fe
+               eye-rects (map #(offset-rect face %) eyes)]
+           (Imgproc/rectangle img
+                              (min-point face) (max-point face)
+                              face-outline-colour 2)
+           (doseq [e eye-rects]
+             (Imgproc/rectangle img
+                                (min-point e) (max-point e)
+                                eye-outline-colour 2)))))))
