@@ -64,6 +64,14 @@
   [rect]
   (Point. (+ (.x rect) (.width rect)) (+ (.y rect) (.height rect))))
 
+(defn offset-rect
+  "Returns absolute version of rectanged embedded in larger rectangle. use this to convert a rectangle found by applying a classifier to a ROI into coordinates relative to the original image"
+  [main embedded]
+  (Rect. (+ (.x main) (.x embedded))
+         (+ (.y main) (.y embedded))
+         (.width embedded)
+         (.height embedded)))
+
 (defn apply-classifier-to-roi
   "Apply a classifier to the region of an image (matrix) defined by an
   openCv rect"
@@ -88,7 +96,12 @@
   (let [gray (colour-to-grayscale img)
         faces-and-eyes (faces-and-eyes gray)]
     (doseq [fe faces-and-eyes]
-      (let [{:keys [face eyes]} fe]
+      (let [{:keys [face eyes]} fe
+            eye-rects (map #(offset-rect face %) eyes)]
         (Imgproc/rectangle img
                            (min-point face) (max-point face)
-                           (Scalar. 255.0 0.0 0.0) 2)))))
+                           (Scalar. 255.0 0.0 0.0) 2)
+        (doseq [e eye-rects]
+          (Imgproc/rectangle img
+                           (min-point e) (max-point e)
+                           (Scalar. 0.0 255.0 0.0) 2))))))
