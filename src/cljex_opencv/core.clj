@@ -134,5 +134,7 @@
      (is-image-blurry img 100))
   ([img threshold]
      (let [gray (colour-to-grayscale img)
-           v (matrix-variance gray)]
-       (< v threshold))))
+           laplacian (result-matrix gray)]
+       (Imgproc/Laplacian gray laplacian CvType/CV_64F)
+       (let [v (matrix-variance laplacian)]
+         (< v threshold)))))
