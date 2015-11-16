@@ -1,5 +1,5 @@
 (ns cljex-opencv.core
-    (:import [org.opencv.core Point Rect Mat MatOfRect CvType Size Scalar]
+    (:import [org.opencv.core Core Point Rect Mat MatOfRect MatOfDouble CvType Size Scalar]
            org.opencv.imgcodecs.Imgcodecs
            org.opencv.imgproc.Imgproc
            org.opencv.objdetect.CascadeClassifier))
@@ -45,6 +45,20 @@
     (Imgproc/cvtColor img gray Imgproc/COLOR_BGR2GRAY)
     gray))
 
+(defn result-matrix
+  "Returns an openCV matrix with the same dimensions and type as the input matrix. Useful since most openCV functions that modify a matrix expect a destination matrix to be supplied"
+  [img]
+  (Mat. (.rows img) (.cols img) (.type img)))
+
+(defn matrix-variance
+  "Return the variance of a single channel image matrix"
+  [img]
+  (let [mean (MatOfDouble.)
+        stddev (MatOfDouble.)]
+    (Core/meanStdDev img mean stddev)
+    (let [sd (first (.toList stddev))]
+      (* sd sd))))
+
 (defn apply-classifier [clr img]
   (let [result (MatOfRect.)]
     (.detectMultiScale clr img result)
@@ -54,11 +68,7 @@
   "Create a matrix representing the region of interest of a larger image
   defined by an openCV rect"
   [img rect]
-  (let [min-x (.x rect)
-        max-x (+ min-x (.width rect))
-        min-y (.y rect)
-        max-y (+ min-y (.height rect))]
-    (.submat img min-y max-y min-x max-x)))
+  (.submat rect))
 
 (defn min-point
   "Returns the corner of a rectanges with the smallest x & y values"
@@ -115,3 +125,14 @@
              (Imgproc/rectangle img
                                 (min-point e) (max-point e)
                                 eye-outline-colour 2)))))))
+
+(defn is-image-blurry
+  "Determine if an image is blurry using the variance of a Laplacian of
+  the grayscale image. From
+  http://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/"
+  ([img]
+     (is-image-blurry img 100))
+  ([img threshold]
+     (let [gray (colour-to-grayscale img)
+           v (matrix-variance gray)]
+       (< v threshold))))
