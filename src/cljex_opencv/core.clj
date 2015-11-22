@@ -60,6 +60,28 @@
     (Imgproc/cvtColor img hsv Imgproc/COLOR_BGR2HSV)
     hsv))
 
+(defn resize-by-width
+  ""
+  [img new-width]
+  (let [w (.cols img)
+        h (.rows img)
+        ratio (/ new-width w)
+        new-height (int (* h ratio))
+        result (Mat. new-height new-width (.type img))]
+    (Imgproc/resize  img result (Size. new-width new-height))
+    result))
+
+(defn resize-by-height
+  ""
+  [img new-height]
+    (let [w (.cols img)
+        h (.rows img)
+        ratio (/ new-height h)
+        new-width (int (* w ratio))
+        result (Mat. new-height new-width (.type img))]
+    (Imgproc/resize  img result (Size. new-width new-height))
+    result))
+
 (defn matrix-variance
   "Return the variance of a single channel image matrix"
   [img]
