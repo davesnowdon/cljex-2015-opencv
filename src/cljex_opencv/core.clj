@@ -37,6 +37,13 @@
   [filename img]
   (Imgcodecs/imwrite filename img))
 
+(defn result-matrix
+  "Returns an openCV matrix with the same dimensions and type as the
+  input matrix. Useful since most openCV functions that don't modify a
+  matrix in-place expect a destination matrix to be supplied"
+  [img]
+  (Mat. (.rows img) (.cols img) (.type img)))
+
 (defn colour-to-grayscale
   "Convert an openCV matrix representing a colour image to a grayscale
   one of the same size"
@@ -45,10 +52,13 @@
     (Imgproc/cvtColor img gray Imgproc/COLOR_BGR2GRAY)
     gray))
 
-(defn result-matrix
-  "Returns an openCV matrix with the same dimensions and type as the input matrix. Useful since most openCV functions that modify a matrix expect a destination matrix to be supplied"
+(defn to-hsv
+  "Convert an openCV matrix representing a colour image to a grayscale
+  one of the same size"
   [img]
-  (Mat. (.rows img) (.cols img) (.type img)))
+  (let [hsv (result-matrix img)]
+    (Imgproc/cvtColor img hsv Imgproc/COLOR_BGR2HSV)
+    hsv))
 
 (defn matrix-variance
   "Return the variance of a single channel image matrix"
@@ -107,24 +117,6 @@
         (map #(apply-classifier-to-roi (eye-classifier) img %) faces)]
     (map (fn [f e] {:face f, :eyes e}) faces eyes-in-faces)))
 
-(defn show-faces-and-eyes
-  "Demonstration function showing how to make use of the values returned
-  by an openCV classified by drawing rectangles around them"
-  ([img]
-     (show-faces-and-eyes img BLUE GREEN))
-  ([img face-outline-colour eye-outline-colour]
-     (let [gray (colour-to-grayscale img)
-           faces-and-eyes (faces-and-eyes gray)]
-       (doseq [fe faces-and-eyes]
-         (let [{:keys [face eyes]} fe
-               eye-rects (map #(offset-rect face %) eyes)]
-           (Imgproc/rectangle img
-                              (min-point face) (max-point face)
-                              face-outline-colour 2)
-           (doseq [e eye-rects]
-             (Imgproc/rectangle img
-                                (min-point e) (max-point e)
-                                eye-outline-colour 2)))))))
 
 (defn is-image-blurry
   "Determine if an image is blurry using the variance of a Laplacian of
