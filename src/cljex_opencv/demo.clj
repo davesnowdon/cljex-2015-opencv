@@ -22,3 +22,22 @@
              (Imgproc/rectangle img
                                 (min-point e) (max-point e)
                                 eye-outline-colour 2)))))))
+
+(defn show-blob
+  "Find a blob in the specified image and if it exists draw the outline
+  and the centre"
+  ([img low high]
+     (show-blob img low high BLUE GREEN))
+  ([img low high centre-colour outline-colour]
+     (if-let [blob (find-blob img low high)]
+       (do
+         (Imgproc/circle img
+                         (Point. (:x blob) (:y blob))
+                         5
+                         centre-colour
+                         2)
+         (Imgproc/drawContours img
+                               (java.util.ArrayList. [(:contour blob)])
+                               0
+                               outline-colour
+                               2)))))

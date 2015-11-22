@@ -1,5 +1,5 @@
 (ns cljex-opencv.core
-    (:import [org.opencv.core Core Point Rect Mat MatOfRect MatOfDouble CvType Size Scalar]
+    (:import [org.opencv.core Core Point Rect Mat MatOfRect MatOfDouble MatOfPoint MatOfPoint2f CvType Size Scalar]
            org.opencv.imgcodecs.Imgcodecs
            org.opencv.imgproc.Imgproc
            org.opencv.objdetect.CascadeClassifier))
@@ -208,3 +208,39 @@
                           Imgproc/RETR_EXTERNAL
                           Imgproc/CHAIN_APPROX_SIMPLE)
     contours))
+
+(defn largest-contour
+  "Return the contour with the largest area"
+  [contours]
+  (if (seq contours)
+    (apply max-key #(Imgproc/contourArea %) contours)
+    nil))
+
+(defn min-enclosing-circle
+  "Given a contour return a map containing the X & Y coordinates of the
+  centre and the radius"
+  [contour]
+  (let [centre (Point.)
+        radius-array (make-array Float/TYPE 1)
+        m2f (MatOfPoint2f.)]
+    ; need to convert the contour from a MatOfPoint to MatOfPoint2f
+    (.fromList m2f (.toList contour))
+    ; now actually get the enclosing circle
+    (Imgproc/minEnclosingCircle m2f centre radius-array)
+    {:x (.x centre) :y (.y centre) :radius (first radius-array)}))
+
+(defn find-blob
+  "Return the centre and radius of the largest blob (if any) which lies
+  within the range low-high in HSV colour space. Adapted from python
+  implementation described in
+  http://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
+  Ideally we would compute the centre using moments (as in the python
+  example but the Moments class seems to have disapeared from openCV
+  3.0.0, see github issue https://github.com/Itseez/opencv/issues/5017"
+  [img low high]
+  (if-let [contour (-> img
+                       (hsv-mask low high)
+                       (find-contours)
+                       (largest-contour))]
+    (assoc (min-enclosing-circle contour)
+      :contour contour)))
