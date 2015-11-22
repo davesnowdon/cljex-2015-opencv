@@ -198,3 +198,13 @@
       (range-mask low high)
       (erode 3 2)
       (dilate 3 2)))
+
+(defn find-contours
+  "Find the contours in an image which is assumed to be grayscale
+  http://docs.opencv.org/3.0.0/d3/dc0/group__imgproc__shape.html#ga17ed9f5d79ae97bd4c7cf18403e1689a"
+  [img]
+  (let [contours (java.util.ArrayList.)]
+    (Imgproc/findContours img contours (Mat.)
+                          Imgproc/RETR_EXTERNAL
+                          Imgproc/CHAIN_APPROX_SIMPLE)
+    contours))
