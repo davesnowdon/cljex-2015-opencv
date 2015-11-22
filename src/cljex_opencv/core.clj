@@ -2,7 +2,8 @@
     (:import [org.opencv.core Core Point Rect Mat MatOfRect MatOfDouble MatOfPoint MatOfPoint2f CvType Size Scalar]
            org.opencv.imgcodecs.Imgcodecs
            org.opencv.imgproc.Imgproc
-           org.opencv.objdetect.CascadeClassifier))
+           org.opencv.objdetect.CascadeClassifier
+           java.awt.image.BufferedImage))
 
 (def FACE-XML "resources/haarcascade_frontalface_default.xml")
 
@@ -59,6 +60,23 @@
   (let [hsv (result-matrix img)]
     (Imgproc/cvtColor img hsv Imgproc/COLOR_BGR2HSV)
     hsv))
+
+(defn to-java
+  "Converts an openCV matrix representing an image to a Java BufferedImage"
+  [img]
+  (let [w (.cols img)
+        h (.rows img)
+        d (.elemSize img)
+        t (if (= d 3)
+            BufferedImage/TYPE_3BYTE_BGR
+            BufferedImage/TYPE_BYTE_GRAY)
+        bytes (make-array Byte/TYPE (int (* w h d)))
+        image (BufferedImage. w h t)]
+    (.get img 0 0 bytes)
+    (-> image
+        (.getRaster)
+        (.setDataElements 0 0 w h bytes))
+    image))
 
 (defn resize-by-width
   "Resize an image by supplied the desired width"
