@@ -44,7 +44,7 @@
   [img]
   (Mat. (.rows img) (.cols img) (.type img)))
 
-(defn colour-to-grayscale
+(defn to-grayscale
   "Convert an openCV matrix representing a colour image to a grayscale
   one of the same size"
   [img]
@@ -182,7 +182,7 @@
   ([img]
      (is-image-blurry img 100))
   ([img threshold]
-     (let [gray (colour-to-grayscale img)
+     (let [gray (to-grayscale img)
            laplacian (result-matrix gray)]
        (Imgproc/Laplacian gray laplacian CvType/CV_64F)
        (let [v (matrix-variance laplacian)]
