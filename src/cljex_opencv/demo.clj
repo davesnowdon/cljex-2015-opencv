@@ -4,6 +4,7 @@
            org.opencv.imgcodecs.Imgcodecs
            org.opencv.imgproc.Imgproc
            org.opencv.objdetect.CascadeClassifier))
+
 (defn show-faces-and-eyes
   "Demonstration function showing how to make use of the values returned
   by an openCV classified by drawing rectangles around them"
