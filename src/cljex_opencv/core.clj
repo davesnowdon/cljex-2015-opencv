@@ -61,7 +61,7 @@
     hsv))
 
 (defn resize-by-width
-  ""
+  "Resize an image by supplied the desired width"
   [img new-width]
   (let [w (.cols img)
         h (.rows img)
@@ -72,7 +72,7 @@
     result))
 
 (defn resize-by-height
-  ""
+  "Resize an image by supplying the desired height"
   [img new-height]
     (let [w (.cols img)
         h (.rows img)
@@ -81,6 +81,41 @@
         result (Mat. new-height new-width (.type img))]
     (Imgproc/resize  img result (Size. new-width new-height))
     result))
+
+(defn gaussian-blur
+  "Apply gaussian blurring to the supplied image. sigma X & sigma Y are
+  calculated from the kernel size"
+  [img kernel-size]
+  (let [result (result-matrix img)]
+    (Imgproc/GaussianBlur img result (Size. kernel-size kernel-size) 0.0)
+    result))
+
+(defn range-mask
+  "Return a mask representing the pixels within the specified range"
+  [img low high]
+  (let [result (Mat. (.rows img) (.cols img) CvType/CV_8UC3)]
+    (Core/inRange img low high result)
+    result))
+
+(defn erode
+  "Erode image http://docs.opencv.org/2.4/doc/tutorials/imgproc/erosion_dilatation/erosion_dilatation.html"
+  ([img] (erode img 3 1))
+  ([img kernel-size iterations]
+     (let [result (result-matrix img)
+           se (Imgproc/getStructuringElement
+               Imgproc/MORPH_ELLIPSE (Size. kernel-size kernel-size))]
+       (Imgproc/erode  img result se (Point. -1 -1) iterations)
+       result)))
+
+(defn dilate
+  "Dilate image http://docs.opencv.org/2.4/doc/tutorials/imgproc/erosion_dilatation/erosion_dilatation.html"
+  ([img] (dilate img 3 1))
+  ([img kernel-size iterations]
+     (let [result (result-matrix img)
+           se (Imgproc/getStructuringElement
+               Imgproc/MORPH_ELLIPSE (Size. kernel-size kernel-size))]
+       (Imgproc/dilate  img result se (Point. -1 -1) iterations)
+       result)))
 
 (defn matrix-variance
   "Return the variance of a single channel image matrix"
@@ -152,3 +187,14 @@
        (Imgproc/Laplacian gray laplacian CvType/CV_64F)
        (let [v (matrix-variance laplacian)]
          (< v threshold)))))
+
+(defn hsv-mask
+  "Convert an image into a mask indicating the pixels containing values
+  within the supplied lower and upper bounds in HSV colour space"
+  [img low high]
+  (-> img
+      (gaussian-blur 11)
+      (to-hsv)
+      (range-mask low high)
+      (erode 3 2)
+      (dilate 3 2)))
