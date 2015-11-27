@@ -54,8 +54,9 @@
              width (.cols img)
              height (.rows img)
              half-height (/ height 2)
-             x (+ half-height (* offset half-height))]
+             x (+ half-height (* offset half-height))
+             x-off (* (Math/sin orientation) half-height)]
          (Imgproc/line img
-                       (Point. x 0)
-                       (Point. x (- height 1))
+                       (Point. (- x x-off) 0)
+                       (Point. (+ x x-off) (- height 1))
                        line-colour 2)))))
