@@ -78,31 +78,49 @@
         (.setDataElements 0 0 w h bytes))
     image))
 
+(defn make-gray-cell
+  "Return a value capable of holding a single cell in a grayscalw image"
+  []
+  (make-array Byte/TYPE 1))
+
+(defn from-gray-cell
+  "Exract value from a gray cell"
+  [cell]
+  (Byte/toUnsignedInt (first cell)))
+
+; TODO make capable of handling multi-channel images
+(defn get-cell
+  "Return the value of the cell at row, col in the grayscale image"
+  ([img row col]
+   (get-cell img row col (make-gray-cell)))
+  ([img row col cell]
+   (do
+     (.get img row col cell)
+     (from-gray-cell cell))))
+
 ; TODO make capable of handling multi-channel images
 (defn get-row
   "Get a row from a grayscale image"
   [img row]
-  (let [cell (make-array Byte/TYPE 1)]
-    (map (fn [i] (do (.get img row i cell) (Byte/toUnsignedInt (first cell))))
-         (range 0 (.cols img)))))
+  (let [cell (make-gray-cell)]
+    (map (fn [i] (get-cell img row i cell)) (range 0 (.cols img)))))
 
 ; TODO make capable of handling multi-channel images
 (defn get-col
   "Get a column from a grayscale image"
   [img col]
-  (let [cell (make-array Byte/TYPE 1)]
-    (map (fn [i] (do (.get img i col cell) (Byte/toUnsignedInt (first cell))))
-         (range 0 (.rows img)))))
+  (let [cell (make-gray-cell)]
+    (map (fn [i] (get-cell img i col cell)) (range 0 (.rows img)))))
 
 (defn argmax
-  ""
+  "Return the index in the sequence of the cell with the max value"
   [vals]
   (.indexOf  vals (apply max vals)))
 
 (defn argmax-row
-  ""
+  "For each row in the image return the index of the highest value"
   [img]
-  )
+  (map (fn [i] (argmax (get-row img i))) (range 0 (.rows img))))
 
 (defn resize-by-width
   "Resize an image by supplied the desired width"
