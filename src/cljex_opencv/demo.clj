@@ -42,3 +42,20 @@
                                0
                                outline-colour
                                2)))))
+
+(defn show-line
+  "Attempt to detect a line in the image and draw the detected line over
+  the original"
+  ([img]
+     (show-line img BLUE))
+  ([img line-colour]
+     (if-let [line (find-line img)]
+       (let [[offset orientation] line
+             width (.cols img)
+             height (.rows img)
+             half-height (/ height 2)
+             x (+ half-height (* offset half-height))]
+         (Imgproc/line img
+                       (Point. x 0)
+                       (Point. x (- height 1))
+                       line-colour 2)))))
