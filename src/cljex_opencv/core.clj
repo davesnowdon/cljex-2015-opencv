@@ -1,4 +1,5 @@
 (ns cljex-opencv.core
+    (:require [cljex-opencv.util :refer :all])
     (:import [org.opencv.core Core Point Rect Mat MatOfRect MatOfDouble MatOfPoint MatOfPoint2f CvType Size Scalar]
            org.opencv.imgcodecs.Imgcodecs
            org.opencv.imgproc.Imgproc
