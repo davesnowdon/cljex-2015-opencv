@@ -308,23 +308,51 @@
     (assoc (min-enclosing-circle contour)
       :contour contour)))
 
-(defn apply-filter
-  ""
-  [])
-
 (defn find-line
-  "Detect a line in an inage, Return [offset, orientation] or nil, if no line detected.
-    offset: rough position of the line on screen [-1, +1] (-1: on the extrem left, 1: on the extrem right, 0: centered)
-  orientation: its orientation [-pi/2,pi/2]
-  Adapted from the python implementation by Alexandre Mazel, https://youtu.be/UGj3H6ETHJg"
+  "Detect a line in an inage, Return [offset, orientation] or nil, if no
+    line detected.  offset: rough position of the line on screen [-1,
+    +1] (-1: on the extrem left, 1: on the extrem right, 0: centered)
+    orientation: its orientation [-pi/2,pi/2] Adapted from the python
+    implementation by Alexandre Mazel, https://youtu.be/UGj3H6ETHJg"
   [img]
-  (let [gray (to-grayscale img)
-        fil (result-matrix gray)
-        thresh (result-matrix gray)
-        kernel (Mat. 1 3 CvType/CV_64F)]
-    ; set the kernel values and apply to grayscale image
-    (.put kernel 0 0 (into-array Double/TYPE [-1.0 2.0 -1.0]))
-    (Imgproc/filter2D gray fil -1 kernel)
-    ; threshold result
-    (Imgproc/threshold fil thresh 45.0 255 Imgproc/THRESH_TOZERO)
+  (letfn [(line-filter [img]
+            (let [gray (to-grayscale img)
+                  fil (result-matrix gray)
+                  thresh (result-matrix gray)
+                  kernel (Mat. 1 3 CvType/CV_64F)]
+              ; set the kernel values and apply to grayscale image
+              (.put kernel 0 0 (into-array Double/TYPE [-1.0 2.0 -1.0]))
+              (Imgproc/filter2D gray fil -1 kernel)
+              ; threshold result
+              (Imgproc/threshold fil thresh 45.0 255 Imgproc/THRESH_TOZERO)
+              thresh))
+          (detect-line [amax]
+            (let [amax-idx
+                  (map-indexed (fn [idx itm] [idx (zero? itm)]) amax)
+                  non-zero (filter #(not (zero? %)) amax)
+                  non-zero-idx (filter (fn [[i z]] z) amax-idx)
+                  num-non-zero (count non-zero)]
+              (if (> num-non-zero 4)
+                (let [first-non-zero (first (first non-zero-idx))
+                      last-non-zero (first (first (reverse non-zero-idx)))
+                      height-sampling (- last-non-zero first-non-zero)
+                      sampling-size (max (min (/ (count non-zero) 40) 8) 1)
+                      top-sample (mean (take sampling-size non-zero))
+                      middle-sample
+                      (mean (take sampling-size
+                                  (drop (/ num-non-zero 2) non-zero)))
+                      bottom-sample (mean
+                                     (drop (- num-non-zero sampling-size)
+                                           non-zero))
+                      offset (- (* (/ middle-sample (.cols img)) 2) 1)
+                      ; WRN: here it could be wrong as the aLine has zero
+                      ; removed, so perhaps the top and bottom are not
+                      ; at top or bottom
+                      orientation  (/ (- top-sample  bottom-sample)
+                                      height-sampling)]
+                  [offset orientation]))))]
+    (-> img
+        (line-filter)
+        (argmax-row)
+        (detect-line))
     ))
