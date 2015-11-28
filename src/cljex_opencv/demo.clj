@@ -11,7 +11,7 @@
   ([img]
      (show-faces-and-eyes img BLUE GREEN))
   ([img face-outline-colour eye-outline-colour]
-     (let [gray (colour-to-grayscale img)
+     (let [gray (to-grayscale img)
            faces-and-eyes (faces-and-eyes gray)]
        (doseq [fe faces-and-eyes]
          (let [{:keys [face eyes]} fe
