@@ -198,7 +198,7 @@
   "Create a matrix representing the region of interest of a larger image
   defined by an openCV rect"
   [img rect]
-  (.submat rect))
+  (.submat img rect))
 
 (defn min-point
   "Returns the corner of a rectanges with the smallest x & y values"
