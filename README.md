@@ -4,9 +4,7 @@ Clojure code to accompany the presentation "Seeing with Clojure" at Clojure Exch
 
 ## Usage
 
-"Useful code in cljex-opencv.core namespace.
-
-The following functions are in the cljex-opencv.demo namespace and make it easier to test out the supplied algorithms.
+"Useful" code in cljex-opencv.core namespace.
 
 read a file into an openCV matrix
 
@@ -16,7 +14,9 @@ write an openCV image matrix to a PNG or JPEG file
 
     (write-image “filename.png” img)
 
-Attempts to find a vertical(ish) line in the supplied image and draws it.
+The following functions are in the cljex-opencv.demo namespace and make it easier to test out the supplied algorithms.
+
+Attempt to find a vertical(ish) line in the supplied image and draws it.
 
     (show-line img)
 
